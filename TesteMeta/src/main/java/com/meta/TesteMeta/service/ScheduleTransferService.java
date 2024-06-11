@@ -1,4 +1,4 @@
-package com.meta.TesteMeta.services;
+package com.meta.TesteMeta.service;
 
 import com.meta.TesteMeta.dto.ScheduleTransferCreateDto;
 import com.meta.TesteMeta.dto.ScheduleTransferResponseDto;

@@ -1,4 +1,4 @@
-package com.meta.TesteMeta.enuns;
+package com.meta.TesteMeta.enums;
 
 public enum Tax {
 /*0 0 3,00 2,5%

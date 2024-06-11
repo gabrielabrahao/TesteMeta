@@ -1,20 +1,19 @@
-package com.meta.TesteMeta.services.impl;
+package com.meta.TesteMeta.service.impl;
 
 import com.meta.TesteMeta.dto.ScheduleTransferCreateDto;
 import com.meta.TesteMeta.dto.ScheduleTransferResponseDto;
 import com.meta.TesteMeta.entity.ScheduleTransfer;
-import com.meta.TesteMeta.enuns.Tax;
+import com.meta.TesteMeta.enums.Tax;
 import com.meta.TesteMeta.exception.ValidacaoException;
 import com.meta.TesteMeta.mapper.ScheduleTransferMapper;
 import com.meta.TesteMeta.repository.SchedulerTransferRepository;
-import com.meta.TesteMeta.services.ScheduleTransferService;
+import com.meta.TesteMeta.service.ScheduleTransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class ScheduleTransferServiceImpl implements ScheduleTransferService {
@@ -25,30 +24,42 @@ public class ScheduleTransferServiceImpl implements ScheduleTransferService {
     @Override
     public ScheduleTransferResponseDto scheduleTransferCreate(ScheduleTransferCreateDto scheduleTransferCreateDto) {
         ScheduleTransfer scheduleTransfer = scheduleTransferMapper.toScheduleTransfer(scheduleTransferCreateDto);
+        validDates(scheduleTransferCreateDto, scheduleTransfer);
         scheduleTransfer.setTax(calculateTax(scheduleTransfer.getScheduleDateCreated(), scheduleTransfer.getScheduleDate()));
         validAccounts(scheduleTransferCreateDto);
         validValues(scheduleTransferCreateDto);
-        if (scheduleTransferCreateDto.getScheduleDateCreated().isAfter(scheduleTransferCreateDto.getScheduleDate())){
-            throw new ValidacaoException("Data de agendamento não pode ser maior que a data de transferência");
-        }
+
+
 
 
         scheduleTransfer = repository.save(scheduleTransfer);
         return scheduleTransferMapper.toScheduleTransferResponseDto(scheduleTransfer);
     }
 
+    private static void validDates(ScheduleTransferCreateDto scheduleTransferCreateDto, ScheduleTransfer scheduleTransfer) {
+        if (scheduleTransferCreateDto.getScheduleDateCreated() == null){
+            scheduleTransfer.setScheduleDateCreated(LocalDateTime.now());
+        }
+        if (scheduleTransfer.getScheduleDate() == null){
+            throw new ValidacaoException("Transfer date is required");
+        }
+        if (scheduleTransfer.getScheduleDateCreated().isAfter(scheduleTransfer.getScheduleDate())){
+            throw new ValidacaoException("Scheduling date cannot be greater than the transfer date");
+        }
+    }
+
     private static void validValues(ScheduleTransferCreateDto scheduleTransferCreateDto) {
         if (scheduleTransferCreateDto.getValueTransfer() <= 0){
-            throw new ValidacaoException("Valor da transferência é obrigatório");
+            throw new ValidacaoException("Transfer amount is required");
         }
     }
 
     private static void validAccounts(ScheduleTransferCreateDto scheduleTransferCreateDto) {
         if (scheduleTransferCreateDto.getOriginAccount() == null || scheduleTransferCreateDto.getDestinationAccount() == null){
-            throw new ValidacaoException("Conta de origem e destino são obrigatórias");
+            throw new ValidacaoException("Source and destination account are required");
         }
         if (scheduleTransferCreateDto.getOriginAccount().isEmpty() || scheduleTransferCreateDto.getDestinationAccount().isEmpty()){
-            throw new ValidacaoException("Conta de origem e destino são obrigatórias");
+            throw new ValidacaoException("Source and destination account are required");
         }
     }
 
@@ -61,7 +72,7 @@ public class ScheduleTransferServiceImpl implements ScheduleTransferService {
         int days = scheduleDate.getDayOfYear() - scheduleDateCreated.getDayOfYear();
         double tax = Tax.getTax(days).getTax();
         if (tax == 0.0){
-            throw new ValidacaoException("Não há taxa aplicável para a transferência");
+            throw new ValidacaoException("There is no fee applicable for the transfer");
         }
         return tax;
     }

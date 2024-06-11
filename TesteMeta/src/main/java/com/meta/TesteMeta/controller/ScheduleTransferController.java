@@ -1,8 +1,8 @@
-package com.meta.TesteMeta.controllers;
+package com.meta.TesteMeta.controller;
 
 import com.meta.TesteMeta.dto.ScheduleTransferCreateDto;
 import com.meta.TesteMeta.dto.ScheduleTransferResponseDto;
-import com.meta.TesteMeta.services.ScheduleTransferService;
+import com.meta.TesteMeta.service.ScheduleTransferService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
